@@ -18,6 +18,8 @@
 #include "rb/slot1.h"
 #include "rb/slot2.h"
 
+extern void init_c_m5unified();
+
 #define MRBC_HEAP_MEMORY_SIZE (15 * 1024)
 #define MRUBYC_VM_MAIN_STACK_SIZE (50 * 1024)
 
@@ -33,6 +35,7 @@ void app_main() {
 
     // mruby/c initialize
     mrbc_init(memory_pool, MRBC_HEAP_MEMORY_SIZE);
+    init_c_m5unified();
 
     ////////////////////
     // Class, Method
