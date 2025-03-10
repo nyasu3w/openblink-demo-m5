@@ -105,6 +105,20 @@ static int blehr_gap_event(struct ble_gap_event *event, void *arg) {
         blehr_advertise();
       }
       conn_handle = event->link_estab.conn_handle;
+
+      /* Initiate MTU exchange after connection established */
+      ble_gattc_exchange_mtu(conn_handle, NULL, NULL);
+
+      /* Update connection parameters for higher throughput */
+      struct ble_gap_upd_params params = {
+          .itvl_min = 6,              /* 7.5ms (6 * 1.25ms) */
+          .itvl_max = 12,             /* 15ms (12 * 1.25ms) */
+          .latency = 0,               /* No slave latency */
+          .supervision_timeout = 100, /* 1s (100 * 10ms) */
+          .min_ce_len = 0,
+          .max_ce_len = 0,
+      };
+      ble_gap_update_params(conn_handle, &params);
       break;
 
     case BLE_GAP_EVENT_DISCONNECT:
@@ -136,8 +150,12 @@ static int blehr_gap_event(struct ble_gap_event *event, void *arg) {
       break;
 
     case BLE_GAP_EVENT_MTU:
-      //      MODLOG_DFLT(INFO, "mtu update event; conn_handle=%d mtu=%d\n",
-      //                  event->mtu.conn_handle, event->mtu.value);
+      printf("MTU update event; conn_handle=%d mtu=%d\n",
+             event->mtu.conn_handle, event->mtu.value);
+      break;
+
+    case BLE_GAP_EVENT_CONN_UPDATE:
+      printf("Connection update event; status=%d\n", event->conn_update.status);
       break;
   }
 
@@ -194,6 +212,13 @@ void ble_init(void) {
   /* Initialize the NimBLE host configuration */
   ble_hs_cfg.sync_cb = blehr_on_sync;
   ble_hs_cfg.reset_cb = blehr_on_reset;
+
+  /* Set preferred MTU size */
+  ble_att_set_preferred_mtu(512);
+
+  /* Set preferred PHY to 2M */
+  ble_gap_set_prefered_default_le_phy(BLE_GAP_LE_PHY_2M_MASK,
+                                      BLE_GAP_LE_PHY_2M_MASK);
 
   rc = ble_blink_init();
   assert(rc == 0);

@@ -39,7 +39,7 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
                                              0x3c, 0x92, 0x84, 0x4a, 0x35, 0x11,
                                              0x56, 0xdd, 0x9f, 0xad),
                  .access_cb = blink_write_program,
-                 .flags = BLE_GATT_CHR_F_WRITE,
+                 .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_NO_RSP,
              },
              {
                  // Console: a0-15-b3-de-18-5a-42-52-aa-04-7a-87-d3-8c-e1-48

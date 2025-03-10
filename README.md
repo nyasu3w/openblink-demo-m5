@@ -17,6 +17,7 @@ To clone the repository and initialize the submodules, run the following command
 ```console
 $ git clone https://github.com/OpenBlink/openblink-demo-m5.git
 $ pio run
+$ pio run -t erase && pio run -t upload
 ```
 
 ## Verified Hardware
@@ -61,9 +62,11 @@ OpenBlink provides a simple API for controlling the onboard RGB LED through mrub
 ### Available Classes and Methods
 
 #### LED Class
+
 - `LED.set([r, g, b])` - Sets the RGB LED color. Each value should be between 0-255.
 
 #### Blink Class
+
 - `Blink.req_reload?` - Checks if a code reload is requested.
 
 ### Example: LED Blinking Code
@@ -76,21 +79,22 @@ while true do
   # Red
   LED.set([255, 0, 0])
   sleep 1
-  
+
   # Green
   LED.set([0, 255, 0])
   sleep 1
-  
+
   # Blue
   LED.set([0, 0, 255])
   sleep 1
-  
+
   # Check if reload is requested
   break if Blink.req_reload?
 end
 ```
 
 This example demonstrates:
+
 - Setting RGB LED colors using the `LED.set` method
 - Using arrays to specify RGB values
 - Implementing a clean exit when code reload is requested
