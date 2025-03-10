@@ -95,3 +95,36 @@ This example demonstrates:
 - Using arrays to specify RGB values
 - Implementing a clean exit when code reload is requested
 
+### Example2: LCD output code
+This is just an additional code on the previous LED Blinking Code.
+```
+RED = [255, 0, 0]
+GREEN = [0, 255, 0]
+BLUE = [0, 0, 255]
+
+while true do
+  # Red
+  Display.set_text_color(63488);
+  Display.puts "      RED"
+  puts "RED"
+  LED.set([255, 0, 0])
+  sleep 1
+  
+  # Green
+  Display.set_text_color(2016);
+  Display.puts "      GREEN"
+  puts "GREEN"
+  LED.set([0, 255, 0])
+  sleep 1
+  
+  # Blue
+  Display.set_text_color(31);
+  Display.puts "      BLUE"
+  puts "BLUE"
+  LED.set([0, 0, 255])
+  sleep 1
+  
+  # Check if reload is requested
+  break if Blink.req_reload?
+end
+```
