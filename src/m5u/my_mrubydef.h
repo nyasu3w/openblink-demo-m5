@@ -9,6 +9,7 @@
 #define USE_DISPLAY_GRAPHICS  // Display to support graphics functions
 #define USE_SPEAKER           // to support Speaker functions
 #define USE_CANVAS            // to support Canvas functions
+#define USE_TOUCH
 
 #include "c_m5.h"
 #include "mrubyc.h"
