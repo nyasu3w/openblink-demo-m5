@@ -17,6 +17,7 @@
 #include "lib/fn.h"
 #include "rb/slot1.h"
 #include "rb/slot2.h"
+#include "rb/slotsleep.h"
 
 extern void init_c_m5unified();
 
@@ -30,6 +31,12 @@ static uint8_t bytecode_slot2[BLINK_MAX_BYTECODE_SIZE] = {0};
 
 void app_main() {
   app_init();
+
+  bool detect_abnormality = false;
+  if (esp_reset_reason() == ESP_RST_PANIC) {
+    detect_abnormality = true;
+  }
+
   while (1) {
     mrbc_tcb *tcb[MAX_VM_COUNT] = {NULL};
 
@@ -46,11 +53,16 @@ void app_main() {
     ////////////////////
     // Clear reload request flag
     request_mruby_reload = false;
+
     // Load mruby bytecode
-    if (0 == blink_load(bytecode_slot2,
-                        sizeof(bytecode_slot2) / sizeof(bytecode_slot2[0]))) {
+    if (detect_abnormality) {
+      memcpy(bytecode_slot2, slotsleep, sizeof(slotsleep));
+      printf("LOADED SLEEPING SCRIPT\n");
+    } else if (0 == blink_load(bytecode_slot2, sizeof(bytecode_slot2) /
+                                                   sizeof(bytecode_slot2[0]))) {
       memcpy(bytecode_slot2, slot2, sizeof(slot2));
     }
+    detect_abnormality = false;
 
     ////////////////////
     // mruby/c create task
@@ -64,7 +76,11 @@ void app_main() {
     mrbc_change_priority(tcb[1], 2);
 
     ////////////////////
-    mrbc_run();
+    int ret = mrbc_run();
+    printf("MRUBYC RUN RESULT:%d\n", ret);
+    if (ret != 0) {
+      detect_abnormality = true;
+    }
 
     ble_print("mruby/c finished");
     ////////////////////
