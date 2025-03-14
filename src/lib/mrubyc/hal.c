@@ -46,8 +46,9 @@ static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 */
 static void on_timer(void *arg) {
-  TIMERG0.int_clr_timers.t0_int_clr = 1;
-  TIMERG0.hw_timer[TIMER_0].config.tx_alarm_en = TIMER_ALARM_EN;
+  timer_group_clr_intr_status_in_isr(TIMER_GROUP_0, TIMER_0);
+  timer_group_enable_alarm_in_isr(TIMER_GROUP_0, TIMER_0);
+
   mrbc_tick();
 }
 
