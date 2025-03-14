@@ -17,7 +17,7 @@
 #include "lib/fn.h"
 #include "rb/slot1.h"
 #include "rb/slot2.h"
-#include "rb/slotsleep.h"
+#include "rb/slot_err.h"
 
 extern void init_c_m5unified();
 
