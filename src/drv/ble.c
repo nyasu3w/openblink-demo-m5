@@ -16,7 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+/**
+ * @file ble.c
+ * @brief Bluetooth Low Energy (BLE) driver implementation
+ *
+ * Implements BLE functionality using the NimBLE stack, including
+ * initialization, advertising, and connection management.
+ */
 // #include "esp_log.h"
 #include "freertos/FreeRTOSConfig.h"
 #include "nvs_flash.h"
@@ -41,6 +47,12 @@ uint16_t hrs_hrm_handle;
  * Enables advertising with parameters:
  *     o General discoverable mode
  *     o Undirected connectable mode
+ */
+/**
+ * @brief Starts BLE advertising
+ *
+ * Configures and starts BLE advertising with general discoverable
+ * and undirected connectable modes.
  */
 static void blehr_advertise(void) {
   struct ble_gap_adv_params adv_params;
@@ -92,6 +104,16 @@ static void blehr_advertise(void) {
   }
 }
 
+/**
+ * @brief GAP event handler
+ *
+ * Handles BLE GAP events such as connection establishment,
+ * disconnection, and subscription changes.
+ *
+ * @param event Pointer to the GAP event structure
+ * @param arg User argument (unused)
+ * @return 0 always
+ */
 static int blehr_gap_event(struct ble_gap_event *event, void *arg) {
   switch (event->type) {
     case BLE_GAP_EVENT_LINK_ESTAB:
@@ -162,6 +184,11 @@ static int blehr_gap_event(struct ble_gap_event *event, void *arg) {
   return 0;
 }
 
+/**
+ * @brief Called when the BLE stack is synchronized
+ *
+ * Retrieves the device address and starts advertising.
+ */
 static void blehr_on_sync(void) {
   int rc;
 
@@ -179,10 +206,22 @@ static void blehr_on_sync(void) {
   blehr_advertise();
 }
 
+/**
+ * @brief Called when the BLE stack is reset
+ *
+ * @param reason Reason for the reset
+ */
 static void blehr_on_reset(int reason) {
   //  MODLOG_DFLT(ERROR, "Resetting state; reason=%d\n", reason);
 }
 
+/**
+ * @brief BLE host task
+ *
+ * Main task for the NimBLE host, runs the NimBLE port.
+ *
+ * @param param Task parameters (unused)
+ */
 void blehr_host_task(void *param) {
   //  ESP_LOGI(tag, "BLE Host Task Started");
   /* This function will return only when nimble_port_stop() is executed */
@@ -191,6 +230,11 @@ void blehr_host_task(void *param) {
   nimble_port_freertos_deinit();
 }
 
+/**
+ * @brief Initializes the BLE subsystem
+ *
+ * Sets up the NimBLE stack, configures services, and starts advertising.
+ */
 void ble_init(void) {
   int rc;
 

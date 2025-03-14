@@ -2,6 +2,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file ble_blink.c
+ * @brief Implementation of BLE interface for Blink functionality
+ *
+ * Implements the BLE services and characteristics for the Blink feature,
+ * handling bytecode transfer and device control over BLE.
+ */
 #include "ble_blink.h"
 
 #include <string.h>
@@ -18,11 +25,56 @@
 
 static uint8_t blink_bytecode[BLINK_MAX_BYTECODE_SIZE] = {0};
 
+/**
+ * @brief GATT write callback for the Program characteristic
+ *
+ * Handles write operations to the Program characteristic, processing
+ * various commands for bytecode transfer and device control.
+ *
+ * @param conn_handle Connection handle
+ * @param attr_handle Attribute handle
+ * @param ctxt GATT access context
+ * @param arg User argument (unused)
+ * @return 0 on success, non-zero on failure
+ */
 static int blink_write_program(uint16_t conn_handle, uint16_t attr_handle,
                                struct ble_gatt_access_ctxt *ctxt, void *arg);
+
+/**
+ * @brief GATT read callback for the MTU characteristic
+ *
+ * Handles read operations to the MTU characteristic, returning
+ * the current MTU size.
+ *
+ * @param conn_handle Connection handle
+ * @param attr_handle Attribute handle
+ * @param ctxt GATT access context
+ * @param arg User argument (unused)
+ * @return 0 on success, non-zero on failure
+ */
 static int blink_read_mtu(uint16_t conn_handle, uint16_t attr_handle,
                           struct ble_gatt_access_ctxt *ctxt, void *arg);
-static int blink_program_command_D(BLINK_CHUNK_HEADER *header, uint16_t len);
+
+/**
+ * @brief Processes a Data command
+ *
+ * Handles the 'D' command for transferring bytecode data chunks.
+ *
+ * @param header Pointer to the command header
+ * @param len Total length of the command data
+ * @return 0 on success, non-zero on failure
+ */
+static int blink_program_command_D(BLINK_CHUNK_HEADER *header, struct ble_gatt_access_ctxt *ctxt);
+
+/**
+ * @brief Processes a Program command
+ *
+ * Handles the 'P' command for finalizing bytecode transfer and
+ * verifying CRC.
+ *
+ * @param header Pointer to the command header
+ * @return 0 on success, non-zero on failure
+ */
 static int blink_program_command_P(BLINK_CHUNK_HEADER *header);
 
 static const struct ble_gatt_svc_def gatt_svcs[] = {
@@ -67,6 +119,13 @@ static const struct ble_gatt_svc_def gatt_svcs[] = {
     },
 };
 
+/**
+ * @brief Initializes the BLE Blink service
+ *
+ * Sets up the GATT services and characteristics for the Blink functionality.
+ *
+ * @return 0 on success, non-zero on failure
+ */
 int ble_blink_init(void) {
   int rc;
 
@@ -86,6 +145,18 @@ int ble_blink_init(void) {
   return 0;
 }
 
+/**
+ * @brief GATT read callback for the MTU characteristic
+ *
+ * Handles read operations to the MTU characteristic, returning
+ * the current MTU size.
+ *
+ * @param conn_handle Connection handle
+ * @param attr_handle Attribute handle
+ * @param ctxt GATT access context
+ * @param arg User argument (unused)
+ * @return 0 on success, non-zero on failure
+ */
 static int blink_read_mtu(uint16_t conn_handle, uint16_t attr_handle,
                           struct ble_gatt_access_ctxt *ctxt, void *arg) {
   uint16_t mtu = ble_att_mtu(conn_handle);
@@ -93,6 +164,14 @@ static int blink_read_mtu(uint16_t conn_handle, uint16_t attr_handle,
   return 0;
 }
 
+/**
+ * @brief Sends a string over BLE
+ *
+ * Sends a text message to the connected BLE client as a notification.
+ *
+ * @param data Null-terminated string to send
+ * @return 0 on success, negative value on failure
+ */
 int ble_print(const char *data) {
   struct os_mbuf *om = os_msys_get_pkthdr(strlen(data), 0);
   if (!notify_state) {
@@ -105,6 +184,18 @@ int ble_print(const char *data) {
   return ble_gatts_notify_custom(conn_handle, hrs_hrm_handle, om);
 }
 
+/**
+ * @brief GATT write callback for the Program characteristic
+ *
+ * Handles write operations to the Program characteristic, processing
+ * various commands for bytecode transfer and device control.
+ *
+ * @param conn_handle Connection handle
+ * @param attr_handle Attribute handle
+ * @param ctxt GATT access context
+ * @param arg User argument (unused)
+ * @return 0 on success, non-zero on failure
+ */
 static int blink_write_program(uint16_t conn_handle, uint16_t attr_handle,
                                struct ble_gatt_access_ctxt *ctxt, void *arg) {
   BLINK_CHUNK_HEADER *header = (BLINK_CHUNK_HEADER *)ctxt->om->om_data;
@@ -115,11 +206,17 @@ static int blink_write_program(uint16_t conn_handle, uint16_t attr_handle,
   switch (header->command) {
     case BLINK_CMD_DATA:
       printf("blink_program_command [D]ata\n");
-      blink_program_command_D(header, ctxt->om->om_len);
+      if (blink_program_command_D(header, ctxt) != 0) {
+        printf("blink_program_command [D]ata failed\n");
+        return -1;
+      }
       break;
     case BLINK_CMD_PROG:
       printf("blink_program_command [P]rogram\n");
-      blink_program_command_P(header);
+      if (blink_program_command_P(header) != 0) {
+        printf("blink_program_command [P]rogram failed\n");
+        return -1;
+      }
       break;
     case BLINK_CMD_RESET:
       printf("blink_program_command [Reset]\n");
@@ -136,23 +233,58 @@ static int blink_write_program(uint16_t conn_handle, uint16_t attr_handle,
   return 0;
 }
 
-static int blink_program_command_D(BLINK_CHUNK_HEADER *header, uint16_t len) {
-  BLINK_CHUNK_DATA *data_chunk = (BLINK_CHUNK_DATA *)header;
-  const int size = data_chunk->size;
-  const int offset = data_chunk->offset;
-
-  if (sizeof(BLINK_CHUNK_DATA) + size != len) {
+/**
+ * @brief Processes a Data command
+ *
+ * Handles the 'D' command for transferring bytecode data chunks.
+ *
+ * @param header Pointer to the command header
+ * @param len Total length of the command data
+ * @return 0 on success, non-zero on failure
+ */
+static int blink_program_command_D(BLINK_CHUNK_HEADER *header, struct ble_gatt_access_ctxt *ctxt) {
+  if(ctxt->om->om_len < sizeof(BLINK_CHUNK_DATA)){
     return -1;
   }
+  BLINK_CHUNK_DATA *data_chunk = (BLINK_CHUNK_DATA *)header;
+  const uint16_t size = data_chunk->size;
+  const uint16_t offset = data_chunk->offset;
   if (offset + size > BLINK_MAX_BYTECODE_SIZE) {
     return -1;
   }
 
-  uint8_t *buffer = (uint8_t *)(data_chunk + 1);
-  memcpy(&blink_bytecode[offset], buffer, size);
+  int ofs = 0;
+  struct os_mbuf* om = ctxt->om;
+  while(1){
+    uint8_t* buf = (uint8_t*)om->om_data;
+    uint16_t len = om->om_len;
+    if(om == ctxt->om){
+      buf += sizeof(BLINK_CHUNK_DATA);
+      len -= sizeof(BLINK_CHUNK_DATA);
+    }
+    if(ofs + len > size){
+      return -1;
+    }
+    memcpy(&blink_bytecode[offset+ofs], buf, len);
+    ofs += len;
+    if(om->om_next.sle_next == NULL) break;
+    om = om->om_next.sle_next;
+  }
+  if (ofs != size) {
+    return -1;
+  }
   return 0;
 }
 
+/**
+ * @brief Processes a Program command
+ *
+ * Handles the 'P' command for finalizing bytecode transfer and
+ * verifying CRC.
+ *
+ * @param header Pointer to the command header
+ * @return 0 on success, non-zero on failure
+ */
 static int blink_program_command_P(BLINK_CHUNK_HEADER *header) {
   BLINK_CHUNK_PROGRAM *p = (BLINK_CHUNK_PROGRAM *)header;
   uint16_t crc16 = crc16_reflect(0xd175U, 0xFFFFU, blink_bytecode, p->length);

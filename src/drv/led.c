@@ -1,3 +1,10 @@
+/**
+ * @file led.c
+ * @brief LED driver implementation
+ *
+ * Implements functions for controlling WS2812 RGB LEDs using the ESP32 RMT
+ * peripheral. Based on Espressif's LED strip example.
+ */
 #include "led.h"
 
 #include "../lib/fn.h"
@@ -15,17 +22,12 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "driver/gpio.h"
 
-#define RMT_LED_STRIP_RESOLUTION_HZ 10000000
-#define RMT_LED_STRIP_GPIO_NUM 21
+#define RMT_LED_STRIP_RESOLUTION_HZ 40000000
 
-#define EXAMPLE_LED_NUMBERS 1
-
-#define EXAMPLE_FRAME_DURATION_MS 20
-#define EXAMPLE_ANGLE_INC_FRAME 0.02
-#define EXAMPLE_ANGLE_INC_LED 0.3
-
-static uint8_t led_strip_pixels[EXAMPLE_LED_NUMBERS * 3];
+static uint8_t led_strip_pixels_size = 0;
+static uint8_t *led_strip_pixels = NULL;
 static rmt_encoder_handle_t simple_encoder = NULL;
 static rmt_channel_handle_t led_chan = NULL;
 
@@ -40,17 +42,31 @@ static const rmt_symbol_word_t ws2812_one = {
     .level0 = 1,
     .duration0 = 0.9 * RMT_LED_STRIP_RESOLUTION_HZ / 1000000,  // T1H=0.9us
     .level1 = 0,
-    .duration1 = 0.3 * RMT_LED_STRIP_RESOLUTION_HZ / 1000000,  // T1L=0.3us
+    .duration1 = 0.9 * RMT_LED_STRIP_RESOLUTION_HZ / 1000000,  // T1L=0.9us
 };
 
 // reset defaults to 50uS
 static const rmt_symbol_word_t ws2812_reset = {
-    .level0 = 1,
-    .duration0 = RMT_LED_STRIP_RESOLUTION_HZ / 1000000 * 50 / 2,
+    .level0 = 0,
+    .duration0 = RMT_LED_STRIP_RESOLUTION_HZ / 1000000 * 150,
     .level1 = 0,
-    .duration1 = RMT_LED_STRIP_RESOLUTION_HZ / 1000000 * 50 / 2,
+    .duration1 = RMT_LED_STRIP_RESOLUTION_HZ / 1000000 * 150,
 };
 
+/**
+ * @brief RMT encoder callback for WS2812 LED protocol
+ *
+ * Encodes byte data into RMT symbols according to the WS2812 protocol.
+ *
+ * @param data Pointer to the data to encode
+ * @param data_size Size of the data in bytes
+ * @param symbols_written Number of symbols already written
+ * @param symbols_free Number of free symbols in the buffer
+ * @param symbols Pointer to the symbol buffer
+ * @param done Pointer to a flag indicating if encoding is complete
+ * @param arg User argument (unused)
+ * @return Number of symbols written
+ */
 static size_t encoder_callback(const void *data, size_t data_size,
                                size_t symbols_written, size_t symbols_free,
                                rmt_symbol_word_t *symbols, bool *done,
@@ -88,10 +104,24 @@ static size_t encoder_callback(const void *data, size_t data_size,
   }
 }
 
-fn_t drv_led_init(void) {
+/**
+ * @brief Initializes the LED driver
+ *
+ * Sets up the RMT peripheral for controlling WS2812 RGB LEDs.
+ *
+ * @return kSuccess on successful initialization
+ */
+fn_t drv_led_init(gpio_num_t pin_num, uint8_t size) {
+  if (led_strip_pixels != NULL) {
+    return kFailure;
+  }
+  led_strip_pixels_size = size;
+  led_strip_pixels = (uint8_t *)malloc(led_strip_pixels_size * 3);
+  memset(led_strip_pixels, 0, led_strip_pixels_size * 3);
+  gpio_reset_pin(pin_num);
   rmt_tx_channel_config_t tx_chan_config = {
       .clk_src = RMT_CLK_SRC_DEFAULT,  // select source clock
-      .gpio_num = RMT_LED_STRIP_GPIO_NUM,
+      .gpio_num = pin_num,
       .mem_block_symbols =
           64,  // increase the block size can make the LED less flickering
       .resolution_hz = RMT_LED_STRIP_RESOLUTION_HZ,
@@ -112,9 +142,18 @@ fn_t drv_led_init(void) {
   return kSuccess;
 }
 
+/**
+ * @brief Sets the RGB LED color
+ *
+ * @param kNum LED index (0-based)
+ * @param kRed Red component (0-255)
+ * @param kGreen Green component (0-255)
+ * @param kBlue Blue component (0-255)
+ * @return kSuccess on successful operation, kFailure if LED index is invalid
+ */
 fn_t drv_led_set(const uint8_t kNum, const uint8_t kRed, const uint8_t kGreen,
                  const uint8_t kBlue) {
-  if (kNum >= EXAMPLE_LED_NUMBERS) {
+  if (kNum >= led_strip_pixels_size) {
     return kFailure;
   }
 
@@ -128,7 +167,7 @@ fn_t drv_led_set(const uint8_t kNum, const uint8_t kRed, const uint8_t kGreen,
 
   // Flush RGB values to LEDs
   ESP_ERROR_CHECK(rmt_transmit(led_chan, simple_encoder, led_strip_pixels,
-                               sizeof(led_strip_pixels), &tx_config));
+                               led_strip_pixels_size*3, &tx_config));
   ESP_ERROR_CHECK(rmt_tx_wait_all_done(led_chan, portMAX_DELAY));
 
   return kSuccess;

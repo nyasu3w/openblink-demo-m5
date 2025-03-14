@@ -1,0 +1,78 @@
+# OpenBlink Demo M5 (日本語)
+
+[![English](https://img.shields.io/badge/language-English-blue.svg)](README.md)
+[![中文](https://img.shields.io/badge/language-中文-red.svg)](README.zh-CN.md)
+[![日本語](https://img.shields.io/badge/language-日本語-green.svg)](README.ja.md)
+
+## OpenBlink とは
+
+**_OpenBlink_** は **_ViXion Blink_** からフォークされたオープンソースプロジェクトです。
+
+- 高い生産性を持つ軽量言語 Ruby を使用して組み込みデバイスを開発できます。
+- プログラムの書き換えとデバッグコンソールは完全にワイヤレスです。（BluetoothLE）
+- 書き換え時間は 0.1 秒未満で、マイクロプロセッサの再起動を必要としません。（これを「Blink」と呼んでいます）
+
+## OpenBlink の入手方法
+
+リポジトリをクローンしてサブモジュールを初期化するには、次のコマンドを実行します：
+
+```console
+$ git clone https://github.com/OpenBlink/openblink-demo-m5.git
+$ pio run
+$ pio run -t erase && pio run -t upload
+```
+
+## 検証済みハードウェア
+
+以下のハードウェアプラットフォームは OpenBlink でテスト済みです：
+
+- M5 StampS3 (Espressif ESP32-S3FN8)
+
+## ドキュメント
+
+より詳細なドキュメントについては、[doc ディレクトリ](./doc)をご確認ください。
+
+## mruby/c LED 制御 API
+
+OpenBlink は mruby/c を通じて基板上の RGB LED を制御するためのシンプルな API を提供しています。
+
+### 利用可能なクラスとメソッド
+
+#### LED クラス
+
+- `LED.set([r, g, b])` - RGB LED の色を設定します。各値は 0〜255 の間である必要があります。
+
+#### Blink クラス
+
+- `Blink.req_reload?` - コードのリロードが要求されているかどうかを確認します。
+
+### 例：LED 点滅コード
+
+異なる色で LED を点滅させる簡単な例です：
+
+```ruby
+# RGB LED 点滅例
+while true do
+  # 赤
+  LED.set([255, 0, 0])
+  sleep 1
+
+  # 緑
+  LED.set([0, 255, 0])
+  sleep 1
+
+  # 青
+  LED.set([0, 0, 255])
+  sleep 1
+
+  # リロードが要求されているか確認
+  break if Blink.req_reload?
+end
+```
+
+この例は以下を示しています：
+
+- `LED.set`メソッドを使用した RGB LED 色の設定
+- RGB 値を指定するための配列の使用
+- コードリロードが要求された場合のクリーンな終了の実装
+- `break if Blink.req_reload?`文は OpenBlink アプリケーションにおいて非常に重要です。これにより、Bluetooth インターフェースを通じてコードのリロードが要求された際に、現在の実行ループを適切に終了させることができます。この確認がなければ、プログラムは実行を継続してリロード要求を無視するため、開発やデバッグが困難になります。このメカニズムが「Blink」機能を可能にしています - マイクロプロセッサを再起動せずに 0.1 秒未満でワイヤレスにコードを更新する能力です。

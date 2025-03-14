@@ -2,6 +2,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file fn.h
+ * @brief Function return type definitions
+ *
+ * Defines common return types and status codes used throughout
+ * the application.
+ */
 #ifndef LIB_FN_H
 #define LIB_FN_H
 

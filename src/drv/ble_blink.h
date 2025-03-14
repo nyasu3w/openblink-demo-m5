@@ -2,6 +2,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file ble_blink.h
+ * @brief BLE interface for Blink functionality
+ *
+ * Defines the interface for BLE communication specific to the Blink feature,
+ * including command structures and protocol definitions.
+ */
 #ifndef DRV_BLE_BLINK_H
 #define DRV_BLE_BLINK_H
 
@@ -42,7 +49,23 @@ typedef struct {
 } BLINK_CHUNK_PROGRAM;        // 6byte
 #pragma pack()
 
+/**
+ * @brief Initializes the BLE Blink service
+ *
+ * Sets up the GATT services and characteristics for the Blink functionality.
+ *
+ * @return 0 on success, non-zero on failure
+ */
 int ble_blink_init(void);
+
+/**
+ * @brief Sends a string over BLE
+ *
+ * Sends a text message to the connected BLE client as a notification.
+ *
+ * @param data Null-terminated string to send
+ * @return 0 on success, negative value on failure
+ */
 int ble_print(const char *data);
 
 #endif

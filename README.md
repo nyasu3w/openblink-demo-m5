@@ -1,6 +1,8 @@
 # OpenBlink Demo M5
 
-_Towards a programmable world that changes in the blink of an eye._
+[![English](https://img.shields.io/badge/language-English-blue.svg)](README.md)
+[![中文](https://img.shields.io/badge/language-中文-red.svg)](README.zh-CN.md)
+[![日本語](https://img.shields.io/badge/language-日本語-green.svg)](README.ja.md)
 
 ## What is OpenBlink
 
@@ -26,34 +28,9 @@ The following hardware platforms have been tested with OpenBlink:
 
 - M5 StampS3 (Espressif ESP32-S3FN8)
 
-## Development Environment Versions
+## Documentation
 
-- PlatformIO Core, version 6.1.16
-
-```console
-openblink-demo-m5 $ pio pkg list
-Resolving m5stack-stamps3 dependencies...
-Platform espressif32 @ 6.10.0 (required: espressif32 @ 6.10.0)
-├── framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b (required: platformio/framework-arduinoespressif32 @ ~3.20017.0)
-├── framework-espidf @ 3.50400.0 (required: platformio/framework-espidf @ ~3.50400.0)
-├── tool-cmake @ 3.16.4 (required: platformio/tool-cmake @ ~3.16.0)
-├── tool-esptoolpy @ 1.40501.0 (required: platformio/tool-esptoolpy @ ~1.40501.0)
-├── tool-mkfatfs @ 2.0.1 (required: platformio/tool-mkfatfs @ ~2.0.0)
-├── tool-mklittlefs @ 1.203.210628 (required: platformio/tool-mklittlefs @ ~1.203.0)
-├── tool-mkspiffs @ 2.230.0 (required: platformio/tool-mkspiffs @ ~2.230.0)
-├── tool-ninja @ 1.9.0 (required: platformio/tool-ninja @ ^1.7.0)
-├── tool-openocd-esp32 @ 2.1100.20220706 (required: platformio/tool-openocd-esp32 @ ~2.1100.0)
-├── tool-riscv32-esp-elf-gdb @ 12.1.0+20221002 (required: espressif/tool-riscv32-esp-elf-gdb @ ~12.1.0)
-├── tool-xtensa-esp-elf-gdb @ 12.1.0+20221002 (required: espressif/tool-xtensa-esp-elf-gdb @ ~12.1.0)
-├── toolchain-esp32ulp @ 1.23800.240113 (required: platformio/toolchain-esp32ulp @ ~1.23800.0)
-├── toolchain-riscv32-esp @ 14.2.0+20241119 (required: platformio/toolchain-riscv32-esp @ 14.2.0+20241119)
-└── toolchain-xtensa-esp-elf @ 14.2.0+20241119 (required: platformio/toolchain-xtensa-esp-elf @ 14.2.0+20241119)
-
-Libraries
-├── M5Unified @ 0.2.3 (required: m5stack/M5Unified @ 0.2.3)
-│   └── M5GFX @ 0.2.5 (required: M5GFX @ >=0.2.4)
-└── mrubyc @ 0.0.0+20250216090831.sha.2cbbbf7 (required: git+https://github.com/mrubyc/mrubyc.git#2cbbbf757bbc9366fd319dd76753dc2c8b8386b9)
-```
+For more detailed documentation, please check the [doc directory](./doc)
 
 ## mruby/c LED Control API
 
@@ -132,3 +109,4 @@ while true do
   break if Blink.req_reload?
 end
 ```
+- The `break if Blink.req_reload?` statement is crucial in OpenBlink applications. It allows the program to gracefully exit the current execution loop when a code reload is requested through the Bluetooth interface. Without this check, the program would continue running and ignore reload requests, making development and debugging difficult. This mechanism is what enables the "Blink" feature - the ability to update code wirelessly in less than 0.1 seconds without restarting the microprocessor.
