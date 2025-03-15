@@ -10,7 +10,7 @@
 #include "c_utils.h"
 #include "mrubyc.h"
 
-void init_c_m5unified() {
+void init_c_m5u() {
   class_m5_init();
   class_display_button_init();
   class_utils_init();

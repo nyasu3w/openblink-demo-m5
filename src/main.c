@@ -28,7 +28,7 @@
 #include "rb/slot2.h"
 #include "rb/slot_err.h"
 
-extern void init_c_m5unified();
+extern void init_c_m5u();  // for features in m5u directory
 
 #define MRBC_HEAP_MEMORY_SIZE (15 * 1024)
 #define MRUBYC_VM_MAIN_STACK_SIZE (50 * 1024)
@@ -46,7 +46,6 @@ static uint8_t bytecode_slot2[BLINK_MAX_BYTECODE_SIZE] = {0};
  * Handles loading bytecode, setting up API classes, and managing VM tasks.
  */
 void app_main() {
-  bool block_run_msg_sent = false;
   app_init();
 
   bool detect_abnormality = false;
@@ -55,21 +54,11 @@ void app_main() {
   }
 
   while (1) {
-    if (true == block_run) {
-      if (false == block_run_msg_sent) {
-        ble_print(
-            "The execution of mruby/c has been blocked. Waiting for Blink.");
-        block_run_msg_sent = true;
-      }
-      vTaskDelay(100 / portTICK_PERIOD_MS);  // 100ms delay
-      continue;
-    }
-    block_run_msg_sent = false;
+    block_run = false;  // to be removed?
     mrbc_tcb *tcb[MAX_VM_COUNT] = {NULL};
 
     // mruby/c initialize
     mrbc_init(memory_pool, MRBC_HEAP_MEMORY_SIZE);
-    init_c_m5unified();
 
     ////////////////////
     // Class, Method
@@ -77,17 +66,20 @@ void app_main() {
     api_input_define();  // Input.*
     api_blink_define();  // Blink.*
 
+    init_c_m5u();  // for features in m5u directory
+
     ////////////////////
     // Clear reload request flag
     request_mruby_reload = false;
 
     // Load mruby bytecode
     if (detect_abnormality) {
-      memcpy(bytecode_slot2, slotsleep, sizeof(slotsleep));
-      printf("LOADED SLEEPING SCRIPT\n");
+      memcpy(bytecode_slot2, slot_err, sizeof(slot_err));
+      printf("ERROR DETECTED \n");
     } else if (0 == blink_load(bytecode_slot2, sizeof(bytecode_slot2) /
                                                    sizeof(bytecode_slot2[0]))) {
       memcpy(bytecode_slot2, slot2, sizeof(slot2));
+      printf("DEFAULT CODE LOADED \n");
     }
     detect_abnormality = false;
 
@@ -107,11 +99,6 @@ void app_main() {
     printf("MRUBYC RUN RESULT:%d\n", ret);
     if (ret != 0) {
       detect_abnormality = true;
-    }
-
-    if (false == request_mruby_reload) {
-      ble_print("Abnormal termination");
-      app_mrubyc_vm_set_block_run();
     }
 
     ble_print("mruby/c finished");

@@ -1,4 +1,4 @@
 
 extern "C" {
-void init_c_m5unified();
+void init_c_m5u();
 }
