@@ -41,6 +41,8 @@ fn_t app_init(void) {
       size = 1;
       break;
     default:
+      size = 1;
+      rgb_led_pin = (gpio_num_t)21;
       break;
   }
   if (size > 0) {
