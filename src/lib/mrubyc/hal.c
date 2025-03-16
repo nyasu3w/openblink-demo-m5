@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "driver/periph_ctrl.h"
+//#include "driver/periph_ctrl.h"
 #include "driver/timer.h"
 #include "esp_types.h"
 #include "freertos/FreeRTOS.h"
