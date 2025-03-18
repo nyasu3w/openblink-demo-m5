@@ -29,23 +29,23 @@ extern "C" {
 fn_t app_init(void) {
   M5.begin();
   gpio_num_t rgb_led_pin = (gpio_num_t)M5.getPin(m5::pin_name_t::rgb_led);
-  uint8_t size = 0;
-  switch (M5.getBoard()) {
-    case m5::board_t::board_M5StampS3:
-      size = 1;
-      break;
-    case m5::board_t::board_M5AtomMatrix:
-      size = 25;
-      break;
-    case m5::board_t::board_M5AtomLite:
-      size = 1;
-      break;
-    default:
-      size = 1;
-      rgb_led_pin = (gpio_num_t)21;
-      break;
+  uint8_t size = 1;
+  if(M5.getBoard()==m5::board_t::board_M5AtomMatrix) { size=25; }
+
+  if (rgb_led_pin < 0) {  // workaround for rgb_led definition issue
+    switch(M5.getBoard()){
+        case m5::board_t::board_M5Dial:
+        case m5::board_t::board_M5DinMeter:
+        case m5::board_t::board_M5AirQ:
+        case m5::board_t::board_M5StampPLC:
+            rgb_led_pin = GPIO_NUM_21;
+            break;
+        default:
+          break;
+    }
   }
-  if (size > 0) {
+
+  if (rgb_led_pin >= 0) {
     drv_led_init(rgb_led_pin, size);
   }
   ble_init();
