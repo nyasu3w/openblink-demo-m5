@@ -17,8 +17,7 @@
 #include <string.h>
 
 //#include "driver/periph_ctrl.h"
-#include "driver/gptimer.h"
-
+#include "driver/timer.h"
 #include "esp_types.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
@@ -46,6 +45,12 @@ static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
   Timer ISR function
 
 */
+static void on_timer(void *arg) {
+  timer_group_clr_intr_status_in_isr(TIMER_GROUP_0, TIMER_0);
+  timer_group_enable_alarm_in_isr(TIMER_GROUP_0, TIMER_0);
+
+  mrbc_tick();
+}
 
 #endif
 
@@ -57,52 +62,24 @@ static portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
   initialize
 
 */
-
-static bool IRAM_ATTR on_timer(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx) {
-  // ここにタイマー割り込み時の処理を記述
-  mrbc_tick();
-  return true; // タイマーを継続する場合
-}
-
-// タイマーの初期化関数
 void hal_init(void) {
-  // GPTimerの設定
-  gptimer_config_t timer_config = {
-      .clk_src = GPTIMER_CLK_SRC_APB,     // APBクロックソースを使用
-      .direction = GPTIMER_COUNT_UP,      // カウントアップ
-      .resolution_hz = 80000000 / TIMER_DIVIDER, // 分周後の分解能（例: 80MHz / TIMER_DIVIDER）
-  };
+  timer_config_t config;
 
-  // タイマーハンドルの作成
-  gptimer_handle_t timer = NULL;
-  esp_err_t ret = gptimer_new_timer(&timer_config, &timer);
-  if (ret != ESP_OK) {
-      printf("タイマーの作成に失敗しました\n");
-      return;
-  }
+  config.divider = TIMER_DIVIDER;
+  config.counter_dir = TIMER_COUNT_UP;
+  config.counter_en = TIMER_PAUSE;
+  config.alarm_en = TIMER_ALARM_EN;
+  config.intr_type = TIMER_INTR_LEVEL;
+  config.auto_reload = TIMER_AUTORELOAD_EN;
+  config.clk_src = TIMER_SRC_CLK_APB;
 
-  // アラーム設定
-  gptimer_alarm_config_t alarm_config = {
-      .alarm_count = MRBC_TICK_UNIT * 1000, // アラーム値（カウント数）
-      .reload_count = 0,                    // 0からリロード
-      .flags.auto_reload_on_alarm = true,   // アラーム時に自動リロード
-  };
-  gptimer_set_alarm_action(timer, &alarm_config);
+  timer_init(TIMER_GROUP_0, TIMER_0, &config);
+  timer_set_counter_value(TIMER_GROUP_0, TIMER_0, 0x00000000ULL);
+  timer_set_alarm_value(TIMER_GROUP_0, TIMER_0, MRBC_TICK_UNIT * 1000);
+  timer_enable_intr(TIMER_GROUP_0, TIMER_0);
+  timer_isr_register(TIMER_GROUP_0, TIMER_0, on_timer, NULL, 0, NULL);
 
-  // コールバック関数の登録
-  gptimer_event_callbacks_t cbs = {
-      .on_alarm = on_timer, // アラーム時のコールバック
-  };
-  gptimer_register_event_callbacks(timer, &cbs, NULL);
-
-  // タイマーを有効化
-  gptimer_enable(timer);
-
-  // カウンタを0に設定
-  gptimer_set_raw_count(timer, 0);
-
-  // タイマーを開始
-  gptimer_start(timer);
+  timer_start(TIMER_GROUP_0, TIMER_0);
 }
 
 //================================================================
