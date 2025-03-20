@@ -35,6 +35,7 @@ extern void init_c_m5u();  // for features in m5u directory
 
 static bool request_mruby_reload = false;
 static bool block_run = false;
+static bool detect_abnormality = false;
 
 static uint8_t memory_pool[MRBC_HEAP_MEMORY_SIZE] = {0};
 static uint8_t bytecode_slot2[BLINK_MAX_BYTECODE_SIZE] = {0};
@@ -48,7 +49,7 @@ static uint8_t bytecode_slot2[BLINK_MAX_BYTECODE_SIZE] = {0};
 void app_main() {
   app_init();
 
-  bool detect_abnormality = false;
+
   if (esp_reset_reason() == ESP_RST_PANIC) {
     detect_abnormality = true;
   }
@@ -96,6 +97,7 @@ void app_main() {
 
     ////////////////////
     int ret = mrbc_run();
+// mruby/c side said that the return value is not yet examined enough
     printf("MRUBYC RUN RESULT:%d\n", ret);
     if (ret != 0) {
       detect_abnormality = true;
@@ -133,5 +135,11 @@ bool app_mrubyc_vm_get_reload(void) { return request_mruby_reload; }
  */
 fn_t app_mrubyc_vm_set_block_run(void) {
   block_run = true;
-  return kSuccess;
+  return kSuccess; 
+}
+
+void on_mrbc_exception(const void *ptr){
+  printf("mruby/c exception\n");
+  detect_abnormality = true;
+  mrbc_p((mrbc_value *)ptr);
 }
