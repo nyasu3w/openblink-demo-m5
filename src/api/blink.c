@@ -11,9 +11,9 @@
  */
 #include "blink.h"
 
-#include "../../.pio/libdeps/m5stack-stamps3/mrubyc/src/mrubyc.h"
 #include "../lib/fn.h"
 #include "../main.h"
+#include "mrubyc.h"
 
 /**
  * @brief Forward declaration for the mruby/c method implementation

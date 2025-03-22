@@ -29,11 +29,4 @@ fn_t app_mrubyc_vm_set_reload(void);
  */
 bool app_mrubyc_vm_get_reload(void);
 
-/**
- * @brief Sets the mruby/c VM block run flag
- *
- * @return kSuccess always
- */
-fn_t app_mrubyc_vm_set_block_run(void);
-
 #endif

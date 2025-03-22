@@ -16,7 +16,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../.pio/libdeps/m5stack-stamps3/mrubyc/src/mrubyc.h"
 #include "api/blink.h"
 #include "api/input.h"
 #include "api/led.h"
@@ -24,6 +23,7 @@
 #include "app/init.h"
 #include "drv/ble_blink.h"
 #include "lib/fn.h"
+#include "mrubyc.h"
 #include "rb/slot1.h"
 #include "rb/slot2.h"
 #include "rb/slot_err.h"
@@ -31,10 +31,8 @@
 extern void init_c_m5u();  // for features in m5u directory
 
 #define MRBC_HEAP_MEMORY_SIZE (15 * 1024)
-#define MRUBYC_VM_MAIN_STACK_SIZE (50 * 1024)
 
 static bool request_mruby_reload = false;
-static bool block_run = false;
 static bool detect_abnormality = false;
 
 static uint8_t memory_pool[MRBC_HEAP_MEMORY_SIZE] = {0};
@@ -55,7 +53,6 @@ void app_main() {
   }
 
   while (1) {
-    block_run = false;  // to be removed?
     mrbc_tcb *tcb[MAX_VM_COUNT] = {NULL};
 
     // mruby/c initialize
@@ -117,7 +114,6 @@ void app_main() {
  */
 fn_t app_mrubyc_vm_set_reload(void) {
   request_mruby_reload = true;
-  block_run = false;
   return kSuccess;
 }
 
@@ -127,16 +123,6 @@ fn_t app_mrubyc_vm_set_reload(void) {
  * @return true if reload is requested, false otherwise
  */
 bool app_mrubyc_vm_get_reload(void) { return request_mruby_reload; }
-
-/**
- * @brief Sets the mruby/c VM block run flag
- *
- * @return kSuccess always
- */
-fn_t app_mrubyc_vm_set_block_run(void) {
-  block_run = true;
-  return kSuccess; 
-}
 
 void on_mrbc_exception(const void *ptr){
   printf("mruby/c exception\n");

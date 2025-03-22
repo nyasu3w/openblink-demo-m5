@@ -14,9 +14,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../../.pio/libdeps/m5stack-stamps3/mrubyc/src/mrubyc.h"
 #include "../drv/led.h"
 #include "../lib/fn.h"
+#include "mrubyc.h"
 
 /**
  * @brief Forward declaration for the mruby/c method implementation
