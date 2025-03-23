@@ -124,8 +124,16 @@ fn_t app_mrubyc_vm_set_reload(void) {
  */
 bool app_mrubyc_vm_get_reload(void) { return request_mruby_reload; }
 
+
+// to register this callback, add the following to vm_config.h in mrubyc
+//    void on_mrbc_exception(const void *ptr);  // void* or struct VM* including mrubyc.h
+//    #define MRBC_ABORT_BY_EXCEPTION(vm) on_mrbc_exception( &vm->exception )
+
 void on_mrbc_exception(const void *ptr){
   printf("mruby/c exception\n");
   detect_abnormality = true;
-  mrbc_p((mrbc_value *)ptr);
+
+  struct VM* vm = (struct VM*)ptr;
+  mrbc_p(&vm->exception);
+  mrbc_decref(&vm->exception);
 }

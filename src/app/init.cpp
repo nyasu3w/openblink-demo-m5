@@ -35,6 +35,9 @@ fn_t app_init(void) {
   if (rgb_led_pin < 0) {  // workaround for rgb_led definition issue
     switch(M5.getBoard()){
         case m5::board_t::board_M5Dial:
+            rgb_led_pin = (gpio_num_t)M5.getPin(m5::pin_name_t::port_a_pin2);
+            size=70;
+            break;
         case m5::board_t::board_M5DinMeter:
         case m5::board_t::board_M5AirQ:
         case m5::board_t::board_M5StampPLC:
