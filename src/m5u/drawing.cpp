@@ -208,10 +208,10 @@ static void draw_draw_pic_mem(LovyanGFX *dst, draw_pic_type t, const uint8_t * m
           dst->drawBmp(mem,memsize,x,y);
           break;
       case jpg:
-          dst->drawJpg(mem,memsize,x,y);;
+          dst->drawJpg(mem,memsize,x,y);
           break;
       case png:
-          dst->drawPng(mem,memsize,x,y);;
+          dst->drawPng(mem,memsize,x,y);
           break;
   }
 }
