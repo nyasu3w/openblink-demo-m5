@@ -18,5 +18,5 @@ void api_encoder_define(void){
     encoder.clearCount();
 
     mrbc_define_class(0, "Encoder", mrbc_class_object);
-    mrbc_define_method(0, mrbc_class_object, "getcount", c_encoder_getcount);
+    mrbc_define_method(0, mrbc_class_object, "get_count", c_encoder_getcount);
 }
