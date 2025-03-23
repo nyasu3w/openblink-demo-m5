@@ -21,6 +21,7 @@
 #include "api/led.h"
 #include "app/blink.h"
 #include "app/init.h"
+#include "api/m5d_encoder.h"
 #include "drv/ble_blink.h"
 #include "lib/fn.h"
 #include "mrubyc.h"
@@ -64,6 +65,7 @@ void app_main() {
     api_input_define();  // Input.*
     api_blink_define();  // Blink.*
 
+    api_encoder_define();  // M5Dial Encoder
     init_c_m5u();  // for features in m5u directory
 
     ////////////////////
