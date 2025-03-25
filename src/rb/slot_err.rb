@@ -24,6 +24,15 @@ def showO
   end
 end
 
+def check_break
+  if Blink.req_reload? then
+    return true
+  elsif Input.pressed? then
+    Blink.factory_reset!
+    return true
+  end
+  return false
+end
 
 while true do 
   puts "press BtnA or update via Blink to escape this loop"
@@ -33,5 +42,5 @@ while true do
   sleep 0.1
   showS
   sleep 2
-  break if Blink.req_reload? or Input.pressed?
+  break if check_break
 end
