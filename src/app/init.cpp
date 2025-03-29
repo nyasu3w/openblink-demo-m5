@@ -35,7 +35,7 @@ fn_t app_init(void) {
 //  config_data_debug();
 
   gpio_num_t rgb_led_pin = (gpio_num_t)M5.getPin(m5::pin_name_t::rgb_led);
-  uint8_t size;
+  uint8_t size=1;
   if(M5.getBoard()==m5::board_t::board_M5AtomMatrix) { size=25; }
   if (rgb_led_pin < 0) {  // workaround for rgb_led definition issue
     switch(M5.getBoard()){
