@@ -30,11 +30,15 @@ static void c_encoder_was_moved(mrb_vm *vm, mrb_value *v, int argc) {
 }
 
 void api_encoder_define(void){
-    encoder.attachHalfQuad(DIAL_ENCODER_PIN_A, DIAL_ENCODER_PIN_B);
-    encoder.clearCount();
+    static bool encoder_attached = false;
+    if (!encoder_attached) {
+        encoder.attachHalfQuad(DIAL_ENCODER_PIN_A, DIAL_ENCODER_PIN_B);
+        encoder.clearCount();
+        encoder_attached = true;
+    }
 
-    mrbc_define_class(0, "Encoder", mrbc_class_object);
-    mrbc_define_method(0, mrbc_class_object, "get_count", c_encoder_getcount);
-    mrbc_define_method(0, mrbc_class_object, "clear_count", c_encoder_clearcount);
-    mrbc_define_method(0, mrbc_class_object, "set_count", c_encoder_setcount);
+    mrb_class *class_encoder = mrbc_define_class(0, "Encoder", mrbc_class_object);
+    mrbc_define_method(0, class_encoder, "get_count", c_encoder_getcount);
+    mrbc_define_method(0, class_encoder, "clear_count", c_encoder_clearcount);
+    mrbc_define_method(0, class_encoder, "set_count", c_encoder_setcount);
 }
