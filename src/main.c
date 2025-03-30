@@ -19,7 +19,6 @@
 #include "api/blink.h"
 #include "api/input.h"
 #include "api/led.h"
-#include "api/m5d_encoder.h"
 #include "api/configstore.h"
 #include "app/blink.h"
 #include "app/init.h"
