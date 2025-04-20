@@ -84,3 +84,21 @@ while true
   # Main processing
 end
 ```
+
+### factory_reset! Method
+
+- Upon successful processing, a restart (soft reset) will be executed.
+
+#### Arguments
+
+None
+
+#### Return Value (bool)
+
+- false: Fail
+
+#### Code Example
+
+```ruby
+Blink.factory_reset!
+```

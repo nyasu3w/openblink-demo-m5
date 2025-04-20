@@ -84,3 +84,21 @@ while true
   # 主要处理
 end
 ```
+
+### factory_reset! 方法
+
+- 处理成功后，系统将执行重启（软重置）。
+
+#### 参数
+
+无
+
+#### 返回值 (bool)
+
+- false: 失败
+
+#### 代码示例
+
+```ruby
+Blink.factory_reset!
+```

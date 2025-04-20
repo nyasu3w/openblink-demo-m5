@@ -84,3 +84,21 @@ while true
   # メイン処理
 end
 ```
+
+### factory_reset! メソッド
+
+- 処理が成功すると、再起動（ソフトリセット）を実行します。
+
+#### 引数
+
+なし
+
+#### 戻り値 (bool)
+
+- false: 失敗
+
+#### コード例
+
+```ruby
+Blink.factory_reset!
+```
