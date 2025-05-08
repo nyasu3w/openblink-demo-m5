@@ -34,10 +34,13 @@
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 #include "services/gap/ble_svc_gap.h"
+/* MAC */
+#include "../lib/crc/crc.h"
+#include "esp_mac.h"
 
 bool notify_state = false;
 uint16_t conn_handle;
-static const char *device_name = "OpenBlink_ESP32";
+static char device_name[16] = "OpenBlink_ESP32";
 static int blehr_gap_event(struct ble_gap_event *event, void *arg);
 static uint8_t blehr_addr_type;
 struct ble_hs_cfg;
@@ -237,6 +240,14 @@ void blehr_host_task(void *param) {
  */
 void ble_init(void) {
   int rc;
+
+  // Generate DeviceName
+  uint8_t mac_base[6] = {0};
+  if (esp_efuse_mac_get_default(mac_base) == ESP_OK) {
+    // DeviceName = "OpenBlink_XXXX"
+    snprintf(device_name, 16, "OpenBlink_%04X",
+             crc16_reflect(0x9eb2U, 0xFFFFU, mac_base, sizeof(mac_base)));
+  }
 
   /* Initialize NVS — it is used to store PHY calibration data */
   esp_err_t ret = nvs_flash_init();
