@@ -3,6 +3,7 @@
 [![English](https://img.shields.io/badge/language-English-blue.svg)](README.md)
 [![中文](https://img.shields.io/badge/language-中文-red.svg)](README.zh-CN.md)
 [![日本語](https://img.shields.io/badge/language-日本語-green.svg)](README.ja.md)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/OpenBlink/openblink-demo-m5)
 
 ## What is OpenBlink
 
@@ -19,18 +20,23 @@ To clone the repository and initialize the submodules, run the following command
 ```console
 $ git clone https://github.com/OpenBlink/openblink-demo-m5.git
 $ pio run
-$ pio run -t erase && pio run -t upload
+$ pio run -e m5stack-stamps3 -t erase -t upload
 ```
+
+> **Note:** Both `m5stack-stamps3` and `m5stack-atom` environments are configured in platformio.ini and can be used for device operations. The examples above use `m5stack-stamps3`, but you can use `m5stack-atom` by replacing `m5stack-stamps3` with `m5stack-atom` in the commands.
+
 
 ## Verified Hardware
 
 The following hardware platforms have been tested with OpenBlink:
 
 - M5 StampS3 (Espressif ESP32-S3FN8)
+- M5 ATOM (Espressif ESP32)
 
 ## Documentation
 
 For more detailed documentation, please check the [doc directory](./doc)
+For AI-powered comprehensive documentation that helps you understand the codebase, visit [DeepWiki](https://deepwiki.com/OpenBlink/openblink-demo-m5).
 
 ## mruby/c LED Control API
 

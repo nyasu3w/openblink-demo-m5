@@ -111,13 +111,15 @@ Client                                      OpenBlink Device
 
 ### Maximum Bytecode Size
 
-The maximum bytecode size is defined by `BLINK_MAX_BYTECODE_SIZE` in the implementation.
+The maximum bytecode size is defined by `BLINK_MAX_BYTECODE_SIZE` in the implementation, which is set to 15KB (15 * 1024 bytes).
 
 ### CRC Calculation
 
 CRC16 checksum is calculated using the `crc16_reflect` function with the following parameters:
 
-- Initial value: 0xd175
-- Polynomial: 0xFFFF
+- Initial value: 0xFFFF
+- Polynomial: 0xd175 (provides Hamming Distance 4 protection for data lengths up to 32751 bits)
 - Input: bytecode buffer
 - Length: bytecode length
+
+Reference: https://users.ece.cmu.edu/~koopman/crc/index.html

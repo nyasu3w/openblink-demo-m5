@@ -111,13 +111,15 @@
 
 ### 最大字节码大小
 
-最大字节码大小在实现中由`BLINK_MAX_BYTECODE_SIZE`定义。
+最大字节码大小在实现中由`BLINK_MAX_BYTECODE_SIZE`定义，设置为15KB（15 * 1024字节）。
 
 ### CRC 计算
 
 CRC16 校验和使用`crc16_reflect`函数计算，参数如下：
 
-- 初始值：0xd175
-- 多项式：0xFFFF
+- 初始值：0xFFFF
+- 多项式：0xd175（为数据长度高达32751位提供汉明距离4保护）
 - 输入：字节码缓冲区
 - 长度：字节码长度
+
+参考文献: https://users.ece.cmu.edu/~koopman/crc/index.html

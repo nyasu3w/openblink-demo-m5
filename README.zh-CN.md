@@ -3,6 +3,7 @@
 [![English](https://img.shields.io/badge/language-English-blue.svg)](README.md)
 [![中文](https://img.shields.io/badge/language-中文-red.svg)](README.zh-CN.md)
 [![日本語](https://img.shields.io/badge/language-日本語-green.svg)](README.ja.md)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/OpenBlink/openblink-demo-m5)
 
 ## 什么是 OpenBlink
 
@@ -19,18 +20,23 @@
 ```console
 $ git clone https://github.com/OpenBlink/openblink-demo-m5.git
 $ pio run
-$ pio run -t erase && pio run -t upload
+$ pio run -e m5stack-stamps3 -t erase -t upload
 ```
+
+> **注意:** platformio.ini中配置了`m5stack-stamps3`和`m5stack-atom`两种环境，可用于设备操作。上面的示例使用`m5stack-stamps3`，但您可以通过将命令中的`m5stack-stamps3`替换为`m5stack-atom`来使用`m5stack-atom`。
+
 
 ## 已验证的硬件
 
 以下硬件平台已经过 OpenBlink 测试：
 
 - M5 StampS3 (Espressif ESP32-S3FN8)
+- M5 ATOM (Espressif ESP32)
 
 ## 文档
 
 有关更详细的文档，请查看[文档目录](./doc)
+如需查阅AI驱动的全面文档以帮助您理解代码库，请访问[DeepWiki](https://deepwiki.com/OpenBlink/openblink-demo-m5)
 
 ## mruby/c LED 控制 API
 
