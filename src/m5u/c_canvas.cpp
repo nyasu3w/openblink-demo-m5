@@ -18,12 +18,12 @@ static void c_canvas_initialize(mrb_vm *vm, mrb_value *v, int argc) {
   *(M5Canvas **)v->instance->data = canvas;
 
   if (argc > 2) {
-    int depth = val_to_i(vm, v, GET_ARG(3), argc);
+    int depth = MRBC_ARG_I(3);
     canvas->setColorDepth(depth);
   }
   if (argc > 1) {
-    int width = val_to_i(vm, v, GET_ARG(1), argc);
-    int height = val_to_i(vm, v, GET_ARG(2), argc);
+    int width = MRBC_ARG_I(1);
+    int height = MRBC_ARG_I(2);
     auto ptr = canvas->createSprite(width, height);
     if (ptr == nullptr) {
       delete canvas;
@@ -38,8 +38,8 @@ static void c_canvas_initialize(mrb_vm *vm, mrb_value *v, int argc) {
 static void c_canvas_create_sprite(mrb_vm *vm, mrb_value *v, int argc) {
   M5Canvas *canvas = get_checked_data(M5Canvas, vm, v);
   if (argc == 2) {
-    int width = val_to_i(vm, v, GET_ARG(1), argc);
-    int height = val_to_i(vm, v, GET_ARG(2), argc);
+    int width = MRBC_ARG_I(1);
+    int height = MRBC_ARG_I(2);
     canvas->createSprite(width, height);
   } else {
     mrbc_raise(vm, MRBC_CLASS(ArgumentError), "width must be specified");
@@ -51,8 +51,8 @@ static void c_canvas_push_sprite(mrb_vm *vm, mrb_value *v, int argc) {
   M5Canvas *canvas = get_checked_data(M5Canvas, vm, v);
 
   if (argc == 2) {
-    int x = val_to_i(vm, v, GET_ARG(1), argc);
-    int y = val_to_i(vm, v, GET_ARG(2), argc);
+    int x = MRBC_ARG_I(1);
+    int y = MRBC_ARG_I(2);
     canvas->pushSprite(x, y);
   } else if (argc == 3) {
     LovyanGFX *dst;
@@ -61,8 +61,8 @@ static void c_canvas_push_sprite(mrb_vm *vm, mrb_value *v, int argc) {
     } else {
       dst = &M5.Display;  // no error, fall on default
     }
-    int x = val_to_i(vm, v, GET_ARG(2), argc);
-    int y = val_to_i(vm, v, GET_ARG(3), argc);
+    int x = MRBC_ARG_I(2);
+    int y = MRBC_ARG_I(3);
     canvas->pushSprite(dst, x, y);
   } else {
     mrbc_raise(vm, MRBC_CLASS(ArgumentError), "x-y");
@@ -161,25 +161,21 @@ static void class_canvas_draw_png(mrb_vm *vm, mrb_value *v, int argc) {
   M5Canvas *canvas = get_checked_data(M5Canvas, vm, v);
   draw_draw_png(canvas, vm, v, argc);
 }
-
 #endif  // USE_FILE_FUNCTION
 
-static void class_canvas_draw_bmpstr(mrb_vm *vm, mrb_value *v, int argc)
-{
-    M5Canvas *canvas =get_checked_data(M5Canvas,vm, v);
-    draw_draw_bmpstr(canvas,vm,v,argc);
+static void class_canvas_draw_bmpstr(mrb_vm *vm, mrb_value *v, int argc) {
+  M5Canvas *canvas = get_checked_data(M5Canvas, vm, v);
+  draw_draw_bmpstr(canvas, vm, v, argc);
 }
 
-static void class_canvas_draw_jpgstr(mrb_vm *vm, mrb_value *v, int argc)
-{
-    M5Canvas *canvas =get_checked_data(M5Canvas,vm, v);
-    draw_draw_jpgstr(canvas,vm,v,argc);
+static void class_canvas_draw_jpgstr(mrb_vm *vm, mrb_value *v, int argc) {
+  M5Canvas *canvas = get_checked_data(M5Canvas, vm, v);
+  draw_draw_jpgstr(canvas, vm, v, argc);
 }
 
-static void class_canvas_draw_pngstr(mrb_vm *vm, mrb_value *v, int argc)
-{
-    M5Canvas *canvas =get_checked_data(M5Canvas,vm, v);
-    draw_draw_pngstr(canvas,vm,v,argc);
+static void class_canvas_draw_pngstr(mrb_vm *vm, mrb_value *v, int argc) {
+  M5Canvas *canvas = get_checked_data(M5Canvas, vm, v);
+  draw_draw_pngstr(canvas, vm, v, argc);
 }
 
 static void class_canvas_set_rotation(mrb_vm *vm, mrb_value *v, int argc) {
@@ -223,10 +219,10 @@ void class_canvas_init() {
   mrbc_define_method(0, canvas_class, "draw_jpgfile", class_canvas_draw_jpg);
   mrbc_define_method(0, canvas_class, "draw_pngfile", class_canvas_draw_png);
 #endif  // USE_FILE_FUNCTION
-mrbc_define_method(0, canvas_class, "draw_bmpstr", class_canvas_draw_bmpstr);
-mrbc_define_method(0, canvas_class, "draw_jpgstr", class_canvas_draw_jpgstr);
-mrbc_define_method(0, canvas_class, "draw_pngstr", class_canvas_draw_pngstr);
-mrbc_define_method(0, canvas_class, "set_rotation",
+  mrbc_define_method(0, canvas_class, "draw_bmpstr", class_canvas_draw_bmpstr);
+  mrbc_define_method(0, canvas_class, "draw_jpgstr", class_canvas_draw_jpgstr);
+  mrbc_define_method(0, canvas_class, "draw_pngstr", class_canvas_draw_pngstr);
+  mrbc_define_method(0, canvas_class, "set_rotation",
                      class_canvas_set_rotation);
   mrbc_define_method(0, canvas_class, "dimension", c_canvas_get_dimension);
 }

@@ -7,9 +7,9 @@
 
 static void class_display_color_value(mrb_vm *vm, mrb_value *v, int argc) {
   if (argc > 2) {
-    uint8_t r = val_to_i(vm, v, GET_ARG(1), argc);
-    uint8_t g = val_to_i(vm, v, GET_ARG(2), argc);
-    uint8_t b = val_to_i(vm, v, GET_ARG(3), argc);
+    uint8_t r = MRBC_ARG_I(1);
+    uint8_t g = MRBC_ARG_I(2);
+    uint8_t b = MRBC_ARG_I(3);
     uint16_t color = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
     SET_INT_RETURN(color);
   } else {
@@ -91,19 +91,16 @@ static void class_display_draw_png(mrb_vm *vm, mrb_value *v, int argc) {
 }
 #endif  // USE_FILE_FUNCTION
 
-static void class_display_draw_bmpstr(mrb_vm *vm, mrb_value *v, int argc)
-{
-    draw_draw_bmpstr(&M5.Display,vm,v,argc);
+static void class_display_draw_bmpstr(mrb_vm *vm, mrb_value *v, int argc) {
+  draw_draw_bmpstr(&M5.Display, vm, v, argc);
 }
 
-static void class_display_draw_jpgstr(mrb_vm *vm, mrb_value *v, int argc)
-{
-    draw_draw_jpgstr(&M5.Display,vm,v,argc);
+static void class_display_draw_jpgstr(mrb_vm *vm, mrb_value *v, int argc) {
+  draw_draw_jpgstr(&M5.Display, vm, v, argc);
 }
 
-static void class_display_draw_pngstr(mrb_vm *vm, mrb_value *v, int argc)
-{
-    draw_draw_pngstr(&M5.Display,vm,v,argc);
+static void class_display_draw_pngstr(mrb_vm *vm, mrb_value *v, int argc) {
+  draw_draw_pngstr(&M5.Display, vm, v, argc);
 }
 
 static void class_display_scroll(mrb_vm *vm, mrb_value *v, int argc) {
@@ -191,10 +188,14 @@ void class_display_button_init() {
   mrbc_define_method(0, class_display, "draw_jpgfile", class_display_draw_jpg);
   mrbc_define_method(0, class_display, "draw_pngfile", class_display_draw_png);
 #endif  // USE_FILE_FUNCTION
-  mrbc_define_method(0, class_display, "wait_display", class_display_wait_display);
-  mrbc_define_method(0, class_display, "draw_bmpstr", class_display_draw_bmpstr);
-  mrbc_define_method(0, class_display, "draw_jpgstr", class_display_draw_jpgstr);
-  mrbc_define_method(0, class_display, "draw_pngstr", class_display_draw_pngstr);
+  mrbc_define_method(0, class_display, "wait_display",
+                     class_display_wait_display);
+  mrbc_define_method(0, class_display, "draw_bmpstr",
+                     class_display_draw_bmpstr);
+  mrbc_define_method(0, class_display, "draw_jpgstr",
+                     class_display_draw_jpgstr);
+  mrbc_define_method(0, class_display, "draw_pngstr",
+                     class_display_draw_pngstr);
 
   mrbc_define_method(0, class_display, "scroll", class_display_scroll);
   mrbc_define_method(0, class_display, "set_rotation",
