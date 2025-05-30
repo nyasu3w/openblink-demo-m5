@@ -26,10 +26,11 @@ static void class_utils_random(mrb_vm *vm, mrb_value *v, int argc) {
 #endif  // USE_TEMPORAL_RANDOM_FUNCTION
 
 static void class_utils_millis(mrb_vm *vm, mrb_value *v, int argc) {
-  SET_INT_RETURN(xTaskGetTickCount());  // 後で直す。適当にも程がある
+  SET_INT_RETURN(xTaskGetTickCount() * 1000 /
+                 configTICK_RATE_HZ);  // note: overflow not considered
 }
 static void class_utils_delay(mrb_vm *vm, mrb_value *v, int argc) {
-  if (argc > 0) vTaskDelay(MRBC_ARG_I(1));  // 後で直す。適当にも程がある
+  if (argc > 0) vTaskDelay(pdMS_TO_TICKS(MRBC_ARG_I(1)));
 }
 
 void class_utils_init() {
